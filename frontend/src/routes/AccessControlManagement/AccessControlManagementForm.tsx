@@ -63,6 +63,27 @@ const AccessControlManagementForm = ({
     },
   })
 
+  const {
+    data: vmiQueryData,
+    loading,
+    error,
+  } = useSearchResultItemsQuery({
+    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+    variables: {
+      input: [
+        {
+          keywords: [],
+          filters: [
+            { property: 'kind', values: ['VirtualMachineInstance'] },
+            { property: 'cluster', values: ['local-cluster'] },
+          ],
+          limit: -1,
+        },
+      ],
+    },
+  })
+  console.log(vmiQueryData, loading, error)
+
   const clusterRoles = clusterRolesQuery?.searchResult?.flatMap((roles) => roles?.items) ?? []
 
   const { data: users, startPolling: usersStartPolling, stopPolling: usersStopPolling } = useQuery(listUsers)

@@ -64,6 +64,11 @@ const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
 // ACCESS CONTROL
 const AccessControlManagement = lazy(() => import('./routes/AccessControlManagement/AccessControlManagement'))
 
+// VIRTUALIZATION
+// const VirtualizationManagement = lazy(() => import('./routes/Virtualization/Vitrualization'))
+const VirtualizationManagement = lazy(() => import('./routes/Virtualization/VirtualMachines'))
+// VirtualMachines
+
 interface IRoute {
   type: 'route'
   path: NavigationPath
@@ -234,6 +239,13 @@ const routes: (IRoute | IRouteGroup)[] = [
     path: NavigationPath.accessControlManagement,
     match: MatchType.SubRoutes,
     element: <AccessControlManagement />,
+  },
+  {
+    title: 'Virtualization',
+    type: 'route',
+    path: NavigationPath.virtualizationManagement,
+    match: MatchType.SubRoutes,
+    element: <VirtualizationManagement />,
   },
 ]
 

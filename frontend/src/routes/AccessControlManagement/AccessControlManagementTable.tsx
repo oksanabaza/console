@@ -31,7 +31,7 @@ const AccessControlManagementTable = (props: {
   const canAddAccessControl = useIsAnyNamespaceAuthorized(rbacCreate(AccessControlDefinition))
   const managedClusters = useAllClusters(true)
   const filters = useFilters({ managedClusters, accessControls: props.accessControls, t })
-
+  console.log(props.accessControls)
   return (
     <Fragment>
       <BulkActionModal<AccessControl> {...modalProps} />

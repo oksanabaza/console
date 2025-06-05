@@ -16,12 +16,13 @@ import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-ic
 import { get } from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
-import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { OCP_DOC } from '../../../lib/doc-util'
-import { PluginContext } from '../../../lib/PluginContext'
-import { ConfigMap } from '../../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { Pages, usePageVisitMetricHandler } from '../../hooks/console-metrics'
+import { useTranslation } from '../../lib/acm-i18next'
+import { OCP_DOC } from '../../lib/doc-util'
+import { PluginContext } from '../../lib/PluginContext'
+import { ConfigMap } from '../../resources'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import {SplitCard} from './VirtualizationHeaderCard'
 import {
   AcmActionGroup,
   AcmButton,
@@ -32,35 +33,35 @@ import {
   AcmTable,
   AcmTablePaginationContextProvider,
   IAcmTableColumn,
-} from '../../../ui-components'
+} from '../../ui-components'
 import {
   ClosedDeleteExternalResourceModalProps,
   DeleteExternalResourceModal,
   IDeleteExternalResourceModalProps,
-} from '../../Search/components/Modals/DeleteExternalResourceModal'
+} from '../Search/components/Modals/DeleteExternalResourceModal'
 import {
   ClosedDeleteModalProps,
   DeleteResourceModal,
   IDeleteModalProps,
-} from '../../Search/components/Modals/DeleteResourceModal'
-import { SearchInfoModal } from '../../Search/components/Modals/SearchInfoModal'
-import { Searchbar } from '../../Search/components/Searchbar'
+} from '../Search/components/Modals/DeleteResourceModal'
+import { SearchInfoModal } from '../Search/components/Modals/SearchInfoModal'
+import { Searchbar } from '../Search/components/Searchbar'
 import {
   convertStringToQuery,
   formatSearchbarSuggestions,
   getSearchCompleteString,
   operators,
-} from '../../Search/search-helper'
-import { searchClient } from '../../Search/search-sdk/search-client'
+} from '../Search/search-helper'
+import { searchClient } from '../Search/search-sdk/search-client'
 import {
   SearchInput,
   useSearchCompleteQuery,
   useSearchResultItemsAndRelatedItemsLazyQuery,
   useSearchSchemaQuery,
-} from '../../Search/search-sdk/search-sdk'
-import { useSearchDefinitions } from '../../Search/searchDefinitions'
-import { ISearchResult } from '../../Search/SearchResults/utils'
-import { useAllClusters } from '../Clusters/ManagedClusters/components/useAllClusters'
+} from '../Search/search-sdk/search-sdk'
+import { useSearchDefinitions } from '../Search/searchDefinitions'
+import { ISearchResult } from '../Search/SearchResults/utils'
+import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { ClosedVMActionModalProps, IVMActionModalProps, VMActionModal } from './modals/VMActionModal'
 import {
   getVirtualMachineColumnExtensions,
@@ -217,7 +218,7 @@ export default function VirtualMachinesPage() {
         },
       })
     }
-
+    console.log(searchResultItems, 'searchResultItems')
   }, [currentSearch, getSearchResults, isSearchAvailable, parsedCurrentSearch, vmResultLimit])
 
   const vmMetricLink = useMemo(() => {
@@ -431,7 +432,7 @@ export default function VirtualMachinesPage() {
       <SearchInfoModal isOpen={toggleOpen} onClose={() => setToggleOpen(false)} />
       <AcmPageContent id="virtual-machines">
         <PageSection>
-          <Searchbar
+          {/* <Searchbar
             queryString={currentSearch}
             saveSearchTooltip={''}
             setSaveSearch={() => {}}
@@ -446,8 +447,9 @@ export default function VirtualMachinesPage() {
             refetchSearch={refetch}
             inputPlaceholder={currentSearch === '' ? 'Filter VirtualMachines' : ''}
             exportEnabled={false}
-          />
+          /> */}
         </PageSection>
+        <SplitCard/>
         <PageSection>
           <VirtualMachineTable searchResultItems={searchResultItems} />
         </PageSection>
