@@ -1,6 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { getCurrentClusterVersion, getMajorMinorVersion } from '@openshift-assisted/ui-lib/cim'
 import {
   EmptyState,
   EmptyStateBody,
@@ -9,49 +7,18 @@ import {
   PageSection,
   Stack,
   StackItem,
-  TextVariants,
   Title,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { get } from 'lodash'
-import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { Pages, usePageVisitMetricHandler } from '../../hooks/console-metrics'
 import { useTranslation } from '../../lib/acm-i18next'
-import { OCP_DOC } from '../../lib/doc-util'
 import { PluginContext } from '../../lib/PluginContext'
 import { ConfigMap } from '../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
-import {SplitCard} from './VirtualizationHeaderCard'
-import {
-  AcmActionGroup,
-  AcmButton,
-  AcmEmptyState,
-  AcmPage,
-  AcmPageContent,
-  AcmPageHeader,
-  AcmTable,
-  AcmTablePaginationContextProvider,
-  IAcmTableColumn,
-} from '../../ui-components'
-import {
-  ClosedDeleteExternalResourceModalProps,
-  DeleteExternalResourceModal,
-  IDeleteExternalResourceModalProps,
-} from '../Search/components/Modals/DeleteExternalResourceModal'
-import {
-  ClosedDeleteModalProps,
-  DeleteResourceModal,
-  IDeleteModalProps,
-} from '../Search/components/Modals/DeleteResourceModal'
+import { AcmActionGroup, AcmButton, AcmPage, AcmPageContent, AcmPageHeader } from '../../ui-components'
 import { SearchInfoModal } from '../Search/components/Modals/SearchInfoModal'
-import { Searchbar } from '../Search/components/Searchbar'
-import {
-  convertStringToQuery,
-  formatSearchbarSuggestions,
-  getSearchCompleteString,
-  operators,
-} from '../Search/search-helper'
+import { convertStringToQuery, getSearchCompleteString, operators } from '../Search/search-helper'
 import { searchClient } from '../Search/search-sdk/search-client'
 import {
   SearchInput,
@@ -59,118 +26,9 @@ import {
   useSearchResultItemsAndRelatedItemsLazyQuery,
   useSearchSchemaQuery,
 } from '../Search/search-sdk/search-sdk'
-import { useSearchDefinitions } from '../Search/searchDefinitions'
 import { ISearchResult } from '../Search/SearchResults/utils'
-import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import { ClosedVMActionModalProps, IVMActionModalProps, VMActionModal } from './modals/VMActionModal'
-import {
-  getVirtualMachineColumnExtensions,
-  getVirtualMachineRowActionExtensions,
-  getVirtualMachineRowActions,
-} from './utils'
-
-function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[] | undefined }>) {
-  const { searchResultItems } = props
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const { useVirtualMachineActionsEnabled } = useSharedAtoms()
-  const vmActionsEnabled = useVirtualMachineActionsEnabled()
-  const { acmExtensions } = useContext(PluginContext)
-  const allClusters = useAllClusters(true)
-  const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
-  const [deleteExternalResource, setDeleteExternalResource] = useState<IDeleteExternalResourceModalProps>(
-    ClosedDeleteExternalResourceModalProps
-  )
-  const [VMAction, setVMAction] = useState<IVMActionModalProps>(ClosedVMActionModalProps)
-  const searchDefinitions = useSearchDefinitions()
-  const { clusterVersionState } = useSharedAtoms()
-  const clusterVersions = useRecoilValue(clusterVersionState)
-  const clusterVersion = clusterVersions?.[0]
-  const ocpVersion = getMajorMinorVersion(getCurrentClusterVersion(clusterVersion)) || 'latest'
-  const [pluginModal, setPluginModal] = useState<JSX.Element>()
-
-  const rowActionResolver = useCallback(
-    (item: any) => {
-      return getVirtualMachineRowActions(
-        item,
-        allClusters,
-        setDeleteResource,
-        setDeleteExternalResource,
-        setVMAction,
-        vmActionsEnabled,
-        navigate,
-        t,
-        // get the row action extensions for the virtual machine
-        getVirtualMachineRowActionExtensions(item, acmExtensions?.virtualMachineAction || [], setPluginModal)
-      )
-    },
-    [allClusters, navigate, t, vmActionsEnabled, acmExtensions]
-  )
-
-  const extensionColumns: IAcmTableColumn<ISearchResult>[] = useMemo(
-    // get the column extensions for the virtual machine
-    () => getVirtualMachineColumnExtensions(acmExtensions?.virtualMachineListColumn || []),
-    [acmExtensions]
-  )
-
-  const columns: IAcmTableColumn<ISearchResult>[] = useMemo(
-    () => [...searchDefinitions['virtualmachinespage'].columns, ...extensionColumns],
-    [searchDefinitions, extensionColumns]
-  )
-
-  return (
-    <Fragment>
-      {pluginModal}
-      <VMActionModal
-        open={VMAction.open}
-        close={VMAction.close}
-        action={VMAction.action}
-        method={VMAction.method}
-        item={VMAction.item}
-      />
-      <DeleteResourceModal
-        open={deleteResource.open}
-        close={deleteResource.close}
-        resource={deleteResource.resource}
-        currentQuery={deleteResource.currentQuery}
-        relatedResource={deleteResource.relatedResource}
-      />
-      <DeleteExternalResourceModal
-        open={deleteExternalResource.open}
-        close={deleteExternalResource.close}
-        resource={deleteExternalResource.resource}
-        hubCluster={deleteExternalResource.hubCluster}
-      />
-      <AcmTablePaginationContextProvider localStorageKey="vm-page-table">
-        <AcmTable
-          id="virtualMachinesTable"
-          items={searchResultItems}
-          columns={columns}
-          rowActionResolver={rowActionResolver}
-          keyFn={(item: any) => item._uid.toString()}
-          emptyState={
-            <AcmEmptyState
-              key="virtual-machine-empty-state"
-              title={t('No VirtualMachines found')}
-              action={
-                <AcmButton
-                  variant={'link'}
-                  component={TextVariants.a}
-                  href={`${OCP_DOC}/${ocpVersion}/html-single/virtualization/about#about-virt`}
-                  target="_blank"
-                >
-                  {t('Learn more about OpenShift Virtualization')}
-                  <ExternalLinkAltIcon style={{ marginLeft: '8px' }} />
-                </AcmButton>
-              }
-            />
-          }
-          showColumnManagement
-        />
-      </AcmTablePaginationContextProvider>
-    </Fragment>
-  )
-}
+import VirtualMachineTreeTable, { ISearchResultVM } from './TreeTable'
+import { NavigationPath } from '../../NavigationPath'
 
 export default function VirtualMachinesPage() {
   const { t } = useTranslation()
@@ -192,7 +50,7 @@ export default function VirtualMachinesPage() {
   const [toggleOpen, setToggleOpen] = useState<boolean>(false)
   const [currentSearch, setCurrentSearch] = useState<string>('')
 
-  const [getSearchResults, { data, loading, error, refetch }] = useSearchResultItemsAndRelatedItemsLazyQuery({
+  const [getSearchResults, { data, loading, error }] = useSearchResultItemsAndRelatedItemsLazyQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
   })
 
@@ -218,7 +76,6 @@ export default function VirtualMachinesPage() {
         },
       })
     }
-    console.log(searchResultItems, 'searchResultItems')
   }, [currentSearch, getSearchResults, isSearchAvailable, parsedCurrentSearch, vmResultLimit])
 
   const vmMetricLink = useMemo(() => {
@@ -279,43 +136,7 @@ export default function VirtualMachinesPage() {
     },
   })
 
-  const suggestions = useMemo(() => {
-    return currentSearch === '' ||
-      (!currentSearch.endsWith(':') && !operators.some((operator: string) => currentSearch.endsWith(operator)))
-      ? formatSearchbarSuggestions(
-          get(searchSchemaData, 'searchSchema.allProperties', [
-            'name',
-            'namespace',
-            'label',
-            'cluster',
-            'apigroup',
-            'created',
-          ]).filter((data: string) => data !== 'kind' && data !== 'kind_plural'), // don't allow searching for other kinds on VM page
-          'filter',
-          '', // Dont need to de-dupe filters
-          -1,
-          searchSchemaLoading,
-          t
-        )
-      : formatSearchbarSuggestions(
-          get(searchCompleteData || [], 'searchComplete') ?? [],
-          'value',
-          parsedCurrentSearch, // pass current search query in order to de-dupe already selected values
-          -1,
-          searchCompleteLoading,
-          t
-        )
-  }, [
-    currentSearch,
-    parsedCurrentSearch,
-    searchSchemaData,
-    searchSchemaLoading,
-    searchCompleteData,
-    searchCompleteLoading,
-    t,
-  ])
-
-  const searchResultItems: ISearchResult[] | undefined = useMemo(() => {
+  const searchResultItems: ISearchResultVM[] | undefined = useMemo(() => {
     if (error) return []
     else if (loading) return undefined // undefined items triggers loading state table
 
@@ -400,6 +221,7 @@ export default function VirtualMachinesPage() {
     }
   }
 
+  const breadcrumbs = [{ text: t('Virtualization'), to: NavigationPath.virtualizationManagement }]
   return (
     <AcmPage
       hasDrawer
@@ -426,32 +248,17 @@ export default function VirtualMachinesPage() {
               </AcmActionGroup>
             ) : undefined
           }
+          description={t(
+            'Explore your virtual machines, organized by cluster, to quickly find and see their status and details.'
+          )}
+          breadcrumb={breadcrumbs}
         />
       }
     >
       <SearchInfoModal isOpen={toggleOpen} onClose={() => setToggleOpen(false)} />
       <AcmPageContent id="virtual-machines">
         <PageSection>
-          {/* <Searchbar
-            queryString={currentSearch}
-            saveSearchTooltip={''}
-            setSaveSearch={() => {}}
-            suggestions={suggestions}
-            currentQueryCallback={(newQuery) => {
-              setCurrentSearch(newQuery)
-            }}
-            toggleInfoModal={() => setToggleOpen(!toggleOpen)}
-            updateBrowserUrl={() => {}}
-            savedSearchQueries={[]}
-            searchResultData={data}
-            refetchSearch={refetch}
-            inputPlaceholder={currentSearch === '' ? 'Filter VirtualMachines' : ''}
-            exportEnabled={false}
-          /> */}
-        </PageSection>
-        <SplitCard/>
-        <PageSection>
-          <VirtualMachineTable searchResultItems={searchResultItems} />
+          <VirtualMachineTreeTable searchResultItems={searchResultItems} />
         </PageSection>
       </AcmPageContent>
     </AcmPage>

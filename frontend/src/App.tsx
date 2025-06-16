@@ -65,9 +65,7 @@ const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
 const AccessControlManagement = lazy(() => import('./routes/AccessControlManagement/AccessControlManagement'))
 
 // VIRTUALIZATION
-// const VirtualizationManagement = lazy(() => import('./routes/Virtualization/Vitrualization'))
 const VirtualizationManagement = lazy(() => import('./routes/Virtualization/VirtualMachines'))
-// VirtualMachines
 
 interface IRoute {
   type: 'route'

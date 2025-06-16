@@ -182,9 +182,7 @@ export enum NavigationPath {
 
   // Virtualization
   virtualizationManagement = '/multicloud/virtualization',
-  // addAccessControlManagement = '/multicloud/access-control-management/create',
-  // editAccessControlManagement = '/multicloud/access-control-management/edit/:id',
-  // viewAccessControlManagement = '/multicloud/access-control-management/details/:id',
+  migration = '/multicloud/virtualization/migration',
 
   emptyPath = '',
 }

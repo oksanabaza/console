@@ -217,7 +217,6 @@ export default function VirtualMachinesPage() {
         },
       })
     }
-
   }, [currentSearch, getSearchResults, isSearchAvailable, parsedCurrentSearch, vmResultLimit])
 
   const vmMetricLink = useMemo(() => {
