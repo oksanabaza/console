@@ -82,6 +82,8 @@ const AccessControlManagementForm = ({
   const [createdDate, setCreatedDate] = useState('')
   const [name, setName] = useState('')
   const [rbName, setRbName] = useState<string[]>([])
+  const [wasPreFilledRB, setWasPreFilledRB] = useState(false)
+  const [wasPreFilledCRB, setWasPreFilledCRB] = useState(false)
 
   // RoleBinding states
   const {
@@ -117,6 +119,7 @@ const AccessControlManagementForm = ({
     const roleBindings = accessControl?.spec.roleBindings
     if (roleBindings) {
       onRoleBindingChangeRB(roleBindings)
+      setWasPreFilledRB(roleBindings.some((rb) => !!rb.roleRef?.name))
     }
   }, [accessControl?.spec.roleBindings, onRoleBindingChangeRB])
 
@@ -124,8 +127,14 @@ const AccessControlManagementForm = ({
     const clusterRoleBinding = accessControl?.spec.clusterRoleBinding
     if (clusterRoleBinding) {
       onRoleBindingChangeCRB(clusterRoleBinding)
+      setWasPreFilledCRB(
+        isEditing && clusterRoleBinding.roleRef?.name !== undefined && clusterRoleBinding.roleRef?.name !== ''
+      )
     }
-  }, [accessControl?.spec.clusterRoleBinding, onRoleBindingChangeCRB])
+  }, [accessControl?.spec.clusterRoleBinding, isEditing, onRoleBindingChangeCRB])
+
+  const isPreFilledRB = isEditing && wasPreFilledRB
+  const isPreFilledCRB = isEditing && wasPreFilledCRB
 
   const [getSearchResults, { data }] = useSearchCompleteLazyQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
@@ -270,6 +279,8 @@ const AccessControlManagementForm = ({
         clusterRoles,
         idPrefix: 'rb',
         isViewing,
+        isPreFilledRB,
+        isPreFilledCRB: false,
         isRequired: false,
         selectedNamespaces: roleBindingRB.namespaces,
         selectedSubjectNames: roleBindingRB.subjectNames,
@@ -302,6 +313,8 @@ const AccessControlManagementForm = ({
         clusterRoles,
         idPrefix: 'crb',
         isViewing,
+        isPreFilledRB: false,
+        isPreFilledCRB,
         isRequired: false,
         selectedNamespaces: ['All Namespaces'],
         selectedSubjectNames: roleBindingCRB.subjectNames,

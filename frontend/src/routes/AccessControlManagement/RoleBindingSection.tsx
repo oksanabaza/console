@@ -9,6 +9,8 @@ interface RoleBindingSectionProps {
   idPrefix: string
   isViewing: boolean
   isRequired: boolean
+  isPreFilledRB: boolean
+  isPreFilledCRB: boolean
   selectedNamespaces: string[]
   selectedSubjectNames: string[]
   selectedRoles: string[]
@@ -27,6 +29,8 @@ export const RoleBindingSection = ({
   idPrefix,
   isViewing,
   isRequired,
+  isPreFilledRB,
+  isPreFilledCRB,
   selectedNamespaces,
   selectedSubjectNames,
   selectedRoles,
@@ -98,6 +102,7 @@ export const RoleBindingSection = ({
             options: clusterRoles.filter((r) => r !== null).map((r) => ({ id: r._uid, value: r.name })),
             isRequired: isRequired,
             isHidden: isViewing,
+            isDisabled: idPrefix === 'rb' ? isPreFilledRB : isPreFilledCRB,
           },
           {
             id: 'custom-labels',
