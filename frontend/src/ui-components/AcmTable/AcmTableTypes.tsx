@@ -68,6 +68,8 @@ export interface IAcmRowAction<T> {
   isDisabled?: boolean
   /** Visible text for action */
   title: string | React.ReactNode
+  /** Visible description for action */
+  description?: string | React.ReactNode
   /** Function for onClick() action */
   click: (item: T) => void
 }

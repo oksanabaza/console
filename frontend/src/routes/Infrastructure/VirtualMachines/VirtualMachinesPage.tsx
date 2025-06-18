@@ -69,11 +69,14 @@ import {
   getVirtualMachineRowActionExtensions,
   getVirtualMachineRowActions,
 } from './utils'
+import { Outlet } from 'react-router-dom-v5-compat'
+import { useCanMigrateVm } from '../../../hooks/use-can-migrate-vm'
 
 function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[] | undefined }>) {
   const { searchResultItems } = props
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const canMigrateVm = useCanMigrateVm()
   const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
   const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
   const vmActionsEnabled = useVirtualMachineActionsEnabled()
@@ -103,11 +106,12 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
         vmActionsEnabled,
         navigate,
         t,
+        canMigrateVm,
         // get the row action extensions for the virtual machine
         getVirtualMachineRowActionExtensions(item, acmExtensions?.virtualMachineAction || [], setPluginModal)
       )
     },
-    [allClusters, navigate, t, isFineGrainedRbacEnabled, vmActionsEnabled, acmExtensions]
+    [allClusters, navigate, t, canMigrateVm, isFineGrainedRbacEnabled, vmActionsEnabled, acmExtensions]
   )
 
   const extensionColumns: IAcmTableColumn<ISearchResult>[] = useMemo(
@@ -476,6 +480,7 @@ export default function VirtualMachinesPage() {
         </PageSection>
         <PageSection>
           <VirtualMachineTable searchResultItems={vmTableItems} />
+          <Outlet />
         </PageSection>
       </AcmPageContent>
     </AcmPage>
