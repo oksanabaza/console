@@ -1,10 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import { getCurrentClusterVersion, getMajorMinorVersion } from '@openshift-assisted/ui-lib/cim'
 import {
   Alert,
   AlertActionCloseButton,
-  // AlertActionLink,
+  AlertActionLink,
   EmptyState,
   EmptyStateBody,
   EmptyStateHeader,
@@ -217,6 +216,7 @@ export default function VirtualMachinesPage() {
   const [toggleOpen, setToggleOpen] = useState<boolean>(false)
   const [currentSearch, setCurrentSearch] = useState<string>(presetSearchQuery)
   const [isLimitAlertOpen, setIsLimitAlertOpen] = useState(false)
+  const [VMMigrating, setVMMigrating] = useState(false)
 
   const parsedCurrentSearch = useMemo(() => {
     if (presetSearchQuery) {
@@ -392,6 +392,11 @@ export default function VirtualMachinesPage() {
     setIsLimitAlertOpen(vmResultLimit !== -1 && searchResultItems.length >= vmResultLimit)
   }, [searchResultItems.length, vmResultLimit])
 
+  useEffect(() => {
+    const isMigrating = vmTableItems?.some((vm) => (vm as any).status === 'Migrating')
+    setVMMigrating(isMigrating ?? false)
+  }, [vmTableItems])
+
   if (loadStarted) {
     if (!isSearchAvailable) {
       return (
@@ -458,17 +463,21 @@ export default function VirtualMachinesPage() {
         />
       }
     >
-      {/* <Fragment>
-        <Alert isExpandable title="Virtual machine in this project are migrating" variant="info" isInline>
-          {' '}
-          <div style={{ marginBottom: '1rem' }}>
-            The migration is in progress. You can check the VM status and details.
-          </div>
-          <AlertActionLink component="a" href="#">
-            Cancel migration and revert changes
-          </AlertActionLink>
-        </Alert>
-      </Fragment> */}
+      {VMMigrating ? (
+        <Fragment>
+          <Alert isExpandable title="Virtual machine in this project are migrating" variant="info" isInline>
+            {' '}
+            <div style={{ marginBottom: '1rem' }}>
+              The migration is in progress. You can check the VM status and details.
+            </div>
+            <AlertActionLink component="a" href="#">
+              Cancel migration and revert changes
+            </AlertActionLink>
+          </Alert>
+        </Fragment>
+      ) : (
+        ''
+      )}
       <SearchInfoModal isOpen={toggleOpen} onClose={() => setToggleOpen(false)} />
       <AcmPageContent id="virtual-machines">
         {isLimitAlertOpen ? (

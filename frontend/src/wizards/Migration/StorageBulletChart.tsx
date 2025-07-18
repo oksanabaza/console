@@ -2,10 +2,14 @@
 import { Chart, ChartBar, ChartStack, ChartContainer } from '@patternfly/react-charts'
 import { Divider, Flex, FlexItem, Text, TextContent } from '@patternfly/react-core'
 
-export function StorageBulletChart() {
-  const used = 111
-  const reserved = 6
-  const total = 238
+interface StorageBulletChartProps {
+  used: number
+  reserved: number
+  total: number
+}
+
+export function StorageBulletChart(props: StorageBulletChartProps) {
+  const { used, reserved, total } = props
   const free = total - used - reserved
 
   return (
