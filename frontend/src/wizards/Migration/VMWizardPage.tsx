@@ -168,6 +168,7 @@ export function VMWizardPage() {
                       variant={SelectVariant.single}
                       isOpen={openDstCluster}
                       selections={dstCluster}
+                      placeholderText="Select Cluster"
                       onToggle={(_, isOpen) => setOpenDstCluster(isOpen)}
                       onSelect={(_, value) => {
                         setDstCluster(value as string)
@@ -187,6 +188,7 @@ export function VMWizardPage() {
                       isOpen={openDstNamespace}
                       selections={dstNamespace}
                       isDisabled={!dstCluster}
+                      placeholderText={dstCluster ? 'Select Project' : 'To select project, fill cluster fisrt'}
                       onToggle={(_, isOpen) => setOpenDstNamespace(isOpen)}
                       onSelect={(_, value) => {
                         setDstNamespace(value as string)

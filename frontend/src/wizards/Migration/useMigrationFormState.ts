@@ -5,7 +5,7 @@ export function useMigrationFormState() {
   const [srcCluster] = useState('sno-2-b9657')
   const [srcNs] = useState('Namespace')
 
-  const [dstCluster, setDstCluster] = useState('sno-2-cb7dv')
+  const [dstCluster, setDstCluster] = useState('')
   const [dstNamespace, setDstNamespace] = useState('')
 
   const [srcNetwork, setSrcNetwork] = useState('network1')
