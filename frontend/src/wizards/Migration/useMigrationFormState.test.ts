@@ -8,8 +8,8 @@ describe('useMigrationFormState', () => {
     it('should have correct default values for source cluster and namespace', () => {
       const { result } = renderHook(() => useMigrationFormState())
 
-      expect(result.current.srcCluster).toBe('sno-2-b9657')
-      expect(result.current.srcNs).toBe('Namespace')
+      expect(result.current.srcCluster).toBe('')
+      expect(result.current.srcNs).toBe('')
     })
 
     it('should have correct default values for destination cluster and namespace', () => {
