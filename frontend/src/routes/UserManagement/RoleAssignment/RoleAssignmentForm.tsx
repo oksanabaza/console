@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { useCallback, useEffect, useState } from 'react'
 import { AcmDataFormPage, AcmDataFormProps } from '../../../components/AcmDataForm'
 import { FormData, Section } from '../../../components/AcmFormData'
@@ -10,6 +11,7 @@ import {
 } from '../../../resources/multicluster-role-assignment'
 import { truncateMiddle } from '../../Applications/ApplicationDetails/ApplicationTopology/topology/components/future/truncate-middle'
 import { ClustersDualListSelector } from './ClustersDualListSelector'
+import { NamespaceSelector } from './NamespaceSelector'
 import { useRoleAssignmentData } from './hook/RoleAssignmentDataHook'
 import { RoleAssignmentFormDataType, useRoleAssignmentFormData } from './hook/RoleAssignmentFormDataHook'
 import { RoleAssignmentPreselected } from './model/role-assignment-preselected'
@@ -50,6 +52,7 @@ const RoleAssignmentForm = ({
     onChangeGroupValue,
     onChangeScopeKind,
     onChangeScopeValues,
+    onChangeScopeNamespaces,
     onChangeRoles,
   } = useRoleAssignmentFormData(preselected)
 
@@ -199,7 +202,7 @@ const RoleAssignmentForm = ({
             id: `clusters`,
             type: 'Custom',
             isInline: false,
-            value: roleAssignmentFormData.scope.values,
+            value: roleAssignmentFormData.scope.clusterNames,
             onChange: onChangeScopeValues,
             component: isClusterSetLoading ? (
               <LoadingState />
@@ -208,13 +211,38 @@ const RoleAssignmentForm = ({
                 onChoseOptions={(values: { id: string; value: string }[]) =>
                   onChangeScopeValues(values.map((e) => e.value))
                 }
-                clusterSets={roleAssignmentData.clusterSets}
+                clusters={roleAssignmentData.clusters}
               />
             ),
             isRequired: preselected?.cluterSets === undefined || preselected?.cluterSets?.length === 0,
-            isHidden: preselected?.cluterSets?.length || roleAssignmentFormData.scope.kind === 'all',
+            isHidden: roleAssignmentFormData.scope.kind === 'all',
             validation: (clusters: string[]) =>
               clusters?.length > 0 ? undefined : t('at least one cluster should be selected'),
+          },
+          {
+            id: `namespaces`,
+            type: 'Custom',
+            isInline: false,
+            value: roleAssignmentFormData.scope.namespaces,
+            onChange: onChangeScopeNamespaces,
+            component: (() => {
+              return (
+                <NamespaceSelector
+                  selectedClusters={roleAssignmentFormData.scope.clusterNames || []}
+                  clusters={roleAssignmentData.clusters}
+                  onChangeNamespaces={onChangeScopeNamespaces}
+                  selectedNamespaces={roleAssignmentFormData.scope.namespaces}
+                />
+              )
+            })(),
+            isRequired: false,
+            isHidden: (() => {
+              const allScopeHidden = roleAssignmentFormData.scope.kind === 'all'
+              console.log(allScopeHidden, 'allScopeHidden')
+              const noClustersHidden = !roleAssignmentFormData.scope.clusterNames?.length
+              console.log(roleAssignmentFormData, 'roleAssignmentFormData')
+              return allScopeHidden || noClustersHidden
+            })(),
           },
         ],
       },

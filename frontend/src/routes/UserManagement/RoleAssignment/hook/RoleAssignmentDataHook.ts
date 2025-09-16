@@ -4,7 +4,7 @@ import { useQuery } from '../../../../lib/useQuery'
 import { listGroups, listUsers } from '../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { compareStrings } from '../../../../ui-components'
-import { useClusters } from '../../../Infrastructure/Clusters/ClusterSets/components/useClusters'
+import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../../../Search/search-sdk/search-client'
 import { useSearchResultItemsQuery } from '../../../Search/search-sdk/search-sdk'
 
@@ -16,11 +16,7 @@ type SelectOption = {
 type Cluster = {
   name: string
   namespaces?: string[]
-}
-
-type ClusterSet = {
-  name: string
-  clusters?: Cluster[]
+  clusterSet?: string
 }
 
 type RoleAssignmentHookType = {
@@ -28,7 +24,7 @@ type RoleAssignmentHookType = {
   groups: SelectOption[]
   serviceAccounts: SelectOption[]
   roles: SelectOption[]
-  clusterSets: ClusterSet[]
+  clusters: Cluster[]
 }
 
 type RoleAssignmentHookReturnType = {
@@ -49,7 +45,7 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
     groups: [],
     serviceAccounts: [],
     roles: [],
-    clusterSets: [],
+    clusters: [],
   })
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
@@ -98,49 +94,49 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
   )
 
   const [isClusterSetLoading, setIsClusterSetLoading] = useState(true)
-  const { managedClusterSetsState } = useSharedAtoms()
-  const managedClusterSets = useRecoilValue(managedClusterSetsState)
-  const clusters = useClusters({ managedClusterSets })
+  const { namespacesState } = useSharedAtoms()
+  const namespaces = useRecoilValue(namespacesState)
+
+  const clusters = useAllClusters()
 
   useEffect(() => {
-    const clustersGroupedBySet = Object.groupBy(
-      clusters.filter((e) => e.clusterSet),
-      ({ clusterSet }) => clusterSet!
-    )
+    const sharedNamespaces = namespaces
+      .filter((ns) => {
+        const name = ns.metadata.name
+        return name && !name.startsWith('kube-') && !name.startsWith('openshift-') && name !== 'default'
+      })
+      .map((ns) => ns.metadata.name!)
+      .sort()
 
-    const clusterSets: ClusterSet[] = Object.keys(clustersGroupedBySet).map((key) => ({
-      name: key,
-      clusters: clustersGroupedBySet[key]?.map((cluster) => ({
+    const clustersWithNamespaces: Cluster[] = clusters.map((cluster) => {
+      const clusterNamespaces = [...(cluster.namespace ? [cluster.namespace] : []), ...sharedNamespaces]
+
+      return {
         name: cluster.name,
-        namespaces: cluster.namespace ? [cluster.namespace] : [],
-      })),
+        namespaces: clusterNamespaces,
+        clusterSet: cluster.clusterSet,
+      }
+    })
+
+    setRoleAssignmentData((prevData) => ({
+      ...prevData,
+      users,
+      groups,
+      serviceAccounts: [],
+      roles,
+      clusters: clustersWithNamespaces,
     }))
-    setRoleAssignmentData({ ...roleAssignmentData, clusterSets })
     setIsClusterSetLoading(false)
-    // to avoid loop onroleAssignment
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clusters])
+  }, [clusters, namespaces, users, groups, roles])
 
   useEffect(
     () => setIsLoading(isUsersLoading || isGroupsLoading || isRolesLoading || isClusterSetLoading),
     [isUsersLoading, isRolesLoading, isClusterSetLoading, isGroupsLoading]
   )
 
-  // to avoid loop onroleAssignment
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setRoleAssignmentData({ ...roleAssignmentData, users }), [users])
-
-  // to avoid loop onroleAssignment
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setRoleAssignmentData({ ...roleAssignmentData, groups }), [groups])
-
-  // to avoid loop onroleAssignment
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setRoleAssignmentData({ ...roleAssignmentData, roles }), [roles])
-
   return { roleAssignmentData, isLoading, isUsersLoading, isGroupsLoading, isRolesLoading, isClusterSetLoading }
 }
 
 export { useRoleAssignmentData }
 
-export type { RoleAssignmentHookType, SelectOption }
+export type { RoleAssignmentHookType, SelectOption, Cluster }
