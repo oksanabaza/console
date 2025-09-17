@@ -238,11 +238,19 @@ const RoleAssignmentForm = ({
             isRequired: false,
             isHidden: (() => {
               const allScopeHidden = roleAssignmentFormData.scope.kind === 'all'
-              console.log(allScopeHidden, 'allScopeHidden')
               const noClustersHidden = !roleAssignmentFormData.scope.clusterNames?.length
-              console.log(roleAssignmentFormData, 'roleAssignmentFormData')
               return allScopeHidden || noClustersHidden
             })(),
+            validation: (namespaces: string[]) => {
+              if (
+                namespaces &&
+                namespaces.length > 0 &&
+                (!roleAssignmentFormData.scope.clusterNames || roleAssignmentFormData.scope.clusterNames.length === 0)
+              ) {
+                return t('Clusters must be selected before selecting namespaces')
+              }
+              return undefined
+            },
           },
         ],
       },

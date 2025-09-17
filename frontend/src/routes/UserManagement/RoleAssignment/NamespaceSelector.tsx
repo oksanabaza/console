@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useEffect } from 'react'
 import { AcmMultiSelect } from '../../../ui-components'
 import { SelectOption } from '@patternfly/react-core'
 import { SelectVariant } from '../../../components/AcmSelectBase'
@@ -55,6 +55,13 @@ const NamespaceSelector = ({
     },
     [onChangeNamespaces]
   )
+
+  // Clear namespaces when no clusters are selected
+  useEffect(() => {
+    if (selectedClusters.length === 0 && selectedNamespaces.length > 0) {
+      onChangeNamespaces([])
+    }
+  }, [selectedClusters.length, selectedNamespaces.length, onChangeNamespaces])
 
   if (selectedClusters.length === 0) {
     return null

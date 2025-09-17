@@ -65,11 +65,17 @@ const ClustersDualListSelector = ({ onChoseOptions, clusters }: ClustersDualList
             selectedClusters.push({ id: chosenOption.id, value: chosenOption.text })
           }
         } else if (chosenOption.children) {
-          chosenOption.children.forEach((child) => {
-            if (child.isChecked) {
+          if (chosenOption.isChecked) {
+            chosenOption.children.forEach((child) => {
               selectedClusters.push({ id: child.id, value: child.text })
-            }
-          })
+            })
+          } else {
+            chosenOption.children.forEach((child) => {
+              if (child.isChecked) {
+                selectedClusters.push({ id: child.id, value: child.text })
+              }
+            })
+          }
         }
       })
       onChoseOptions(selectedClusters)
@@ -86,11 +92,17 @@ const ClustersDualListSelector = ({ onChoseOptions, clusters }: ClustersDualList
           selectedClusters.push({ id: chosenOption.id, value: chosenOption.text })
         }
       } else if (chosenOption.children) {
-        chosenOption.children.forEach((child) => {
-          if (child.isChecked) {
+        if (chosenOption.isChecked) {
+          chosenOption.children.forEach((child) => {
             selectedClusters.push({ id: child.id, value: child.text })
-          }
-        })
+          })
+        } else {
+          chosenOption.children.forEach((child) => {
+            if (child.isChecked) {
+              selectedClusters.push({ id: child.id, value: child.text })
+            }
+          })
+        }
       }
     })
 
@@ -105,6 +117,13 @@ const ClustersDualListSelector = ({ onChoseOptions, clusters }: ClustersDualList
     ) => {
       const updatedChosenOptions = chosenOptions.map((option) => {
         if (option.id === checkedId) {
+          if (option.children && option.children.length > 0) {
+            const updatedChildren = option.children.map((child) => ({
+              ...child,
+              isChecked: checked,
+            }))
+            return { ...option, isChecked: checked, children: updatedChildren }
+          }
           return { ...option, isChecked: checked }
         }
 
@@ -112,7 +131,14 @@ const ClustersDualListSelector = ({ onChoseOptions, clusters }: ClustersDualList
           const updatedChildren = option.children.map((child) =>
             child.id === checkedId ? { ...child, isChecked: checked } : child
           )
-          return { ...option, children: updatedChildren }
+
+          const allChildrenChecked = updatedChildren.every((child) => child.isChecked)
+
+          return {
+            ...option,
+            isChecked: allChildrenChecked,
+            children: updatedChildren,
+          }
         }
 
         return option
