@@ -58,30 +58,30 @@ describe('useRoleAssignmentFormData', () => {
       const { result } = renderHook(() => useRoleAssignmentFormData())
 
       act(() => {
-        result.current.onChangeUserValue('test-user')
+        result.current.onChangeUserValue(['test-user'])
       })
 
-      expect(result.current.roleAssignmentFormData.subject.user).toBe('test-user')
+      expect(result.current.roleAssignmentFormData.subject.user).toEqual(['test-user'])
     })
 
     it('should change group value', () => {
       const { result } = renderHook(() => useRoleAssignmentFormData())
 
       act(() => {
-        result.current.onChangeGroupValue('test-group')
+        result.current.onChangeGroupValue(['test-group'])
       })
 
-      expect(result.current.roleAssignmentFormData.subject.group).toBe('test-group')
+      expect(result.current.roleAssignmentFormData.subject.group).toEqual(['test-group'])
     })
 
     it('should clear user value when set to undefined', () => {
       const { result } = renderHook(() => useRoleAssignmentFormData())
 
       act(() => {
-        result.current.onChangeUserValue('test-user')
+        result.current.onChangeUserValue(['test-user'])
       })
 
-      expect(result.current.roleAssignmentFormData.subject.user).toBe('test-user')
+      expect(result.current.roleAssignmentFormData.subject.user).toEqual(['test-user'])
 
       act(() => {
         result.current.onChangeUserValue(undefined)
@@ -94,16 +94,58 @@ describe('useRoleAssignmentFormData', () => {
       const { result } = renderHook(() => useRoleAssignmentFormData())
 
       act(() => {
-        result.current.onChangeGroupValue('test-group')
+        result.current.onChangeGroupValue(['test-group'])
       })
 
-      expect(result.current.roleAssignmentFormData.subject.group).toBe('test-group')
+      expect(result.current.roleAssignmentFormData.subject.group).toEqual(['test-group'])
 
       act(() => {
         result.current.onChangeGroupValue(undefined)
       })
 
       expect(result.current.roleAssignmentFormData.subject.group).toBeUndefined()
+    })
+
+    it('should clear group when switching to user kind', () => {
+      const { result } = renderHook(() => useRoleAssignmentFormData())
+
+      // Set group kind and value
+      act(() => {
+        result.current.onChangeSubjectKind(GroupKind)
+        result.current.onChangeGroupValue(['test-group'])
+      })
+
+      expect(result.current.roleAssignmentFormData.subject.kind).toBe(GroupKind)
+      expect(result.current.roleAssignmentFormData.subject.group).toEqual(['test-group'])
+
+      // Switch to user kind
+      act(() => {
+        result.current.onChangeSubjectKind(UserKind)
+      })
+
+      expect(result.current.roleAssignmentFormData.subject.kind).toBe(UserKind)
+      expect(result.current.roleAssignmentFormData.subject.group).toBeUndefined()
+    })
+
+    it('should clear user when switching to group kind', () => {
+      const { result } = renderHook(() => useRoleAssignmentFormData())
+
+      // Set user kind and value
+      act(() => {
+        result.current.onChangeSubjectKind(UserKind)
+        result.current.onChangeUserValue(['test-user'])
+      })
+
+      expect(result.current.roleAssignmentFormData.subject.kind).toBe(UserKind)
+      expect(result.current.roleAssignmentFormData.subject.user).toEqual(['test-user'])
+
+      // Switch to group kind
+      act(() => {
+        result.current.onChangeSubjectKind(GroupKind)
+      })
+
+      expect(result.current.roleAssignmentFormData.subject.kind).toBe(GroupKind)
+      expect(result.current.roleAssignmentFormData.subject.user).toBeUndefined()
     })
   })
 
@@ -231,7 +273,7 @@ describe('useRoleAssignmentFormData', () => {
       const { result } = renderHook(() => useRoleAssignmentFormData(preselected))
 
       expect(result.current.roleAssignmentFormData.subject.kind).toBe(UserKind)
-      expect(result.current.roleAssignmentFormData.subject.user).toBe('preselected-user')
+      expect(result.current.roleAssignmentFormData.subject.user).toEqual(['preselected-user'])
     })
 
     it('should handle preselected group subject', () => {
@@ -245,7 +287,7 @@ describe('useRoleAssignmentFormData', () => {
       const { result } = renderHook(() => useRoleAssignmentFormData(preselected))
 
       expect(result.current.roleAssignmentFormData.subject.kind).toBe(GroupKind)
-      expect(result.current.roleAssignmentFormData.subject.group).toBe('preselected-group')
+      expect(result.current.roleAssignmentFormData.subject.group).toEqual(['preselected-group'])
     })
 
     it('should handle preselected roles', () => {
@@ -281,7 +323,7 @@ describe('useRoleAssignmentFormData', () => {
       const { result } = renderHook(() => useRoleAssignmentFormData(preselected))
 
       expect(result.current.roleAssignmentFormData.subject.kind).toBe(UserKind)
-      expect(result.current.roleAssignmentFormData.subject.user).toBe('test-user')
+      expect(result.current.roleAssignmentFormData.subject.user).toEqual(['test-user'])
       expect(result.current.roleAssignmentFormData.roles).toEqual(['admin', 'view'])
     })
 
@@ -341,7 +383,7 @@ describe('useRoleAssignmentFormData', () => {
 
       act(() => {
         result.current.onChangeRoles(['admin'])
-        result.current.onChangeUserValue('test-user')
+        result.current.onChangeUserValue(['test-user'])
       })
 
       const initialState = result.current.roleAssignmentFormData
@@ -359,7 +401,7 @@ describe('useRoleAssignmentFormData', () => {
       const { result } = renderHook(() => useRoleAssignmentFormData())
 
       act(() => {
-        result.current.onChangeUserValue('test-user')
+        result.current.onChangeUserValue(['test-user'])
         result.current.onChangeScopeValues(['cluster-1'])
       })
 
