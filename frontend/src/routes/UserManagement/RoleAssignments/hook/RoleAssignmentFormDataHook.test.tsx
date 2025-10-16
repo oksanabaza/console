@@ -407,7 +407,7 @@ describe('useRoleAssignmentFormData', () => {
 
     it('should handle preselected cluster sets', () => {
       const preselected: RoleAssignmentPreselected = {
-        cluterSets: ['cluster-set-1', 'cluster-set-2'],
+        clusterSets: ['cluster-set-1', 'cluster-set-2'],
       }
 
       const { result } = renderHook(() => useRoleAssignmentFormData(preselected))
@@ -422,7 +422,7 @@ describe('useRoleAssignmentFormData', () => {
           value: 'test-user',
         },
         roles: ['admin', 'view'],
-        cluterSets: ['cluster-set-1'],
+        clusterSets: ['cluster-set-1'],
       }
 
       const { result } = renderHook(() => useRoleAssignmentFormData(preselected))
