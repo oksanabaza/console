@@ -276,6 +276,15 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               },
             ]
           : []),
+        ...(cluster.consoleURL
+          ? [
+              {
+                id: 'open-console',
+                text: t('Open cluster console'),
+                click: () => window.open(cluster.consoleURL, '_blank', 'noopener,noreferrer'),
+              },
+            ]
+          : []),
         {
           id: ClusterAction.Import,
           ...importTemplate((cluster: Cluster) => createImportResources(cluster.name!, cluster.clusterSet!)),

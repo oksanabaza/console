@@ -98,6 +98,19 @@ export function useClusterNameColumn(areLinksDisplayed: boolean = true): IAcmTab
           ) : (
             <HighlightSearchText text={cluster.displayName} searchText={search} useFuzzyHighlighting />
           )}
+          {cluster.consoleURL && (
+            <Tooltip content={t('Open cluster console (opens in new tab)')}>
+              <a
+                href={cluster.consoleURL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t('Open cluster console (opens in new tab)')}
+                style={{ marginLeft: '0.5rem', verticalAlign: 'middle' }}
+              >
+                <ExternalLinkAltIcon style={{ fontSize: '0.875rem' }} />
+              </a>
+            </Tooltip>
+          )}
         </span>
         {cluster.hive.clusterClaimName && (
           <Content>
@@ -127,6 +140,19 @@ export function useClusterNameColumnModal(areLinksDisplayed: boolean = true): IA
             <Link to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>{cluster.displayName}</Link>
           ) : (
             <span>{cluster.displayName}</span>
+          )}
+          {cluster.consoleURL && (
+            <Tooltip content={t('Open cluster console (opens in new tab)')}>
+              <a
+                href={cluster.consoleURL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t('Open cluster console (opens in new tab)')}
+                style={{ marginLeft: '0.5rem', verticalAlign: 'middle' }}
+              >
+                <ExternalLinkAltIcon style={{ fontSize: '0.875rem' }} />
+              </a>
+            </Tooltip>
           )}
           {clusterDestroyable(cluster) ? (
             ''
