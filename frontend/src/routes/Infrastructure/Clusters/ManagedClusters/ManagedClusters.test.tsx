@@ -23,7 +23,9 @@ import {
   typeByText,
   waitForNock,
   waitForNocks,
+  waitForNotRole,
   waitForNotText,
+  waitForRole,
   waitForTestId,
   waitForText,
   getCSVExportSpies,
@@ -52,6 +54,8 @@ import {
   mockHostedClusters,
   mockManagedClusterInfo8,
   mockManagedCluster9,
+  mockManagedClusterWithConsoleURL,
+  mockManagedClusterWithoutConsoleURL,
 } from './ManagedClusters.sharedmocks'
 
 // Mock KubevirtProviderAlert component
@@ -404,5 +408,101 @@ describe('Clusters Page export', () => {
     )
 
     expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^managedclusters-[\d]+\.csv$/)
+  })
+})
+
+describe('Clusters Page console link', () => {
+  test('should show launch icon when cluster has a consoleURL', async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    const metricNock = nockPostRequest('/metrics?clusters', {})
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClustersState, [mockManagedClusterWithConsoleURL])
+          snapshot.set(clusterDeploymentsState, [])
+          snapshot.set(managedClusterInfosState, [])
+          snapshot.set(certificateSigningRequestsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <ManagedClusters />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForNock(metricNock)
+    await waitForText(mockManagedClusterWithConsoleURL.metadata.name!, true)
+    await waitForRole('link', { name: 'Open cluster console (opens in new tab)' })
+  })
+
+  test('should not show launch icon when cluster has no consoleURL', async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    const metricNock = nockPostRequest('/metrics?clusters', {})
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClustersState, [mockManagedClusterWithoutConsoleURL])
+          snapshot.set(clusterDeploymentsState, [])
+          snapshot.set(managedClusterInfosState, [])
+          snapshot.set(certificateSigningRequestsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <ManagedClusters />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForNock(metricNock)
+    await waitForText(mockManagedClusterWithoutConsoleURL.metadata.name!, true)
+    await waitForNotRole('link', { name: 'Open cluster console (opens in new tab)' })
+  })
+
+  test('should show Open cluster console in kebab menu when consoleURL is available', async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    const metricNock = nockPostRequest('/metrics?clusters', {})
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClustersState, [mockManagedClusterWithConsoleURL])
+          snapshot.set(clusterDeploymentsState, [])
+          snapshot.set(managedClusterInfosState, [])
+          snapshot.set(certificateSigningRequestsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <ManagedClusters />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForNock(metricNock)
+    await waitForText(mockManagedClusterWithConsoleURL.metadata.name!, true)
+    await clickByLabel('Actions', 1)
+    await waitForText('Open cluster console')
+  })
+
+  test('should not show Open cluster console in kebab menu when consoleURL is absent', async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    const metricNock = nockPostRequest('/metrics?clusters', {})
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClustersState, [mockManagedClusterWithoutConsoleURL])
+          snapshot.set(clusterDeploymentsState, [])
+          snapshot.set(managedClusterInfosState, [])
+          snapshot.set(certificateSigningRequestsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <ManagedClusters />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForNock(metricNock)
+    await waitForText(mockManagedClusterWithoutConsoleURL.metadata.name!, true)
+    await clickByLabel('Actions', 1)
+    await waitForNotText('Open cluster console')
   })
 })

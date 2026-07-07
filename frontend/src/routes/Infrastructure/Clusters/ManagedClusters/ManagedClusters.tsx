@@ -17,6 +17,7 @@ import {
   TextVariants,
   Tooltip,
 } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent, nowrap } from '@patternfly/react-table'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
@@ -690,6 +691,20 @@ export function useClusterNameColumn(): IAcmTableColumn<Cluster> {
           <Link to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>
             <HighlightSearchText text={cluster.displayName} searchText={search} isLink useFuzzyHighlighting />
           </Link>
+          {cluster.consoleURL && (
+            <Tooltip content={t('cluster.openConsole')}>
+              <a
+                href={cluster.consoleURL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t('cluster.openConsole')}
+                style={{ marginLeft: '8px', display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ExternalLinkAltIcon />
+              </a>
+            </Tooltip>
+          )}
         </span>
         {cluster.hive.clusterClaimName && (
           <TextContent>

@@ -127,6 +127,48 @@ export const mockManagedCluster9: ManagedCluster = {
   },
   spec: { hubAcceptsClient: true },
 }
+
+export const mockManagedClusterWithConsoleURL: ManagedCluster = {
+  apiVersion: ManagedClusterApiVersion,
+  kind: ManagedClusterKind,
+  metadata: { name: 'managed-cluster-with-console' },
+  spec: { hubAcceptsClient: true },
+  status: {
+    allocatable: { cpu: '', memory: '' },
+    capacity: { cpu: '', memory: '' },
+    version: { kubernetes: '1.17' },
+    clusterClaims: [
+      {
+        name: 'consoleurl.cluster.open-cluster-management.io',
+        value: 'https://console.managed-cluster.example.com',
+      },
+    ],
+    conditions: [
+      { type: 'ManagedClusterConditionAvailable', reason: 'ManagedClusterConditionAvailable', status: 'True' },
+      { type: 'ManagedClusterJoined', reason: 'ManagedClusterJoined', status: 'True' },
+      { type: 'HubAcceptedManagedCluster', reason: 'HubAcceptedManagedCluster', status: 'True' },
+    ],
+  },
+}
+
+export const mockManagedClusterWithoutConsoleURL: ManagedCluster = {
+  apiVersion: ManagedClusterApiVersion,
+  kind: ManagedClusterKind,
+  metadata: { name: 'managed-cluster-no-console' },
+  spec: { hubAcceptsClient: true },
+  status: {
+    allocatable: { cpu: '', memory: '' },
+    capacity: { cpu: '', memory: '' },
+    version: { kubernetes: '1.17' },
+    clusterClaims: [],
+    conditions: [
+      { type: 'ManagedClusterConditionAvailable', reason: 'ManagedClusterConditionAvailable', status: 'True' },
+      { type: 'ManagedClusterJoined', reason: 'ManagedClusterJoined', status: 'True' },
+      { type: 'HubAcceptedManagedCluster', reason: 'HubAcceptedManagedCluster', status: 'True' },
+    ],
+  },
+}
+
 export const mockManagedClusters: ManagedCluster[] = [
   mockManagedCluster0,
   mockManagedCluster1,

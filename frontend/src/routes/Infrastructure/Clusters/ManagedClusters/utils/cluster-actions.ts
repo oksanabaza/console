@@ -19,6 +19,7 @@ export enum ClusterAction {
   RemoveAutomationTemplate = 'remove-automation-template',
   DestroyManaged = 'destroy-managed-cluster',
   ImportHosted = 'import-hypershift-cluster',
+  OpenConsole = 'open-cluster-console',
 }
 
 function clusterSupportsAutomationTemplateChange(cluster: Cluster) {
@@ -122,6 +123,8 @@ export function clusterSupportsAction(
       return clusterSupportsAutomationTemplateChange(cluster)
     case ClusterAction.RemoveAutomationTemplate:
       return cluster.hasAutomationTemplate && !cluster.distribution?.upgradeInfo?.isUpgrading // is not currently upgrading
+    case ClusterAction.OpenConsole:
+      return !!cluster.consoleURL
     default:
       return false
   }
