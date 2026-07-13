@@ -5,10 +5,11 @@ import {
   ClusterDeploymentK8sResource,
   getClusterProperties,
 } from '@openshift-assisted/ui-lib/cim'
-import { AlertVariant, ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
+import { AlertVariant, Button, ButtonVariant, Content, PageSection, Popover } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
-import { Fragment, useMemo, useState } from 'react'
+import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
+import { Fragment, useContext, useMemo, useState } from 'react'
 import { generatePath, Link } from 'react-router'
 import { getControlPlaneString } from '../../../../../../components/Clusters'
 import { RbacButton } from '../../../../../../components/Rbac'
@@ -31,6 +32,7 @@ import {
   AcmAlert,
   AcmButton,
   AcmDescriptionList,
+  AcmDrawerContext,
   AcmInlineCopy,
   AcmInlineProvider,
   AcmInlineStatus,
@@ -44,8 +46,10 @@ import { getPlacementsForCluster, PlacementLinkList } from '../../../Placements/
 import { BatchChannelSelectModal } from '../../components/BatchChannelSelectModal'
 import AIClusterDetails from '../../components/cim/AIClusterDetails'
 import AIHypershiftClusterDetails from '../../components/cim/AIHypershiftClusterDetails'
+import { ClusterPolicySidebar } from '../../components/ClusterPolicySidebar'
 import { ClusterStatusMessageAlert } from '../../components/ClusterStatusMessageAlert'
 import { DistributionField } from '../../components/DistributionField'
+import { EditDescription } from '../../components/EditDescription'
 import { EditLabels } from '../../components/EditLabels'
 import { HiveNotification } from '../../components/HiveNotification'
 import HypershiftClusterDetails from '../../components/HypershiftClusterDetails'
@@ -82,9 +86,132 @@ export function ClusterOverviewPageContent() {
     useClusterDetailsContext()
   const { t } = useTranslation()
   const localHubName = useLocalHubName()
+  const { setDrawerContext } = useContext(AcmDrawerContext)
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
+  const [showEditDescription, setShowEditDescription] = useState<boolean>(false)
+  const [clusterDescription] = useState<string>(`**Weekly managed cluster**
+
+Deployed fresh each week for dev/test workloads.
+
+- [Grafana dashboard](https://grafana.example.com/d/weekly-managed)
+- [Runbook](https://wiki.example.com/runbooks/weekly-managed)
+- [Logs](https://logs.example.com/explore?cluster=weekly-managed)
+
+\`\`\`bash
+oc get nodes
+\`\`\`
+
+Use *italics* and **bold** text formatting.`)
+
+  // Mock PolicyReport data for testing ClusterPolicySidebar
+  const mockPolicyReport = {
+    apiVersion: 'wgpolicyk8s.io/v1alpha2',
+    kind: 'PolicyReport',
+    metadata: {
+      name: cluster?.name || 'test-cluster',
+      namespace: cluster?.namespace || 'test-cluster',
+      uid: 'uid.report.risk.demo',
+    },
+    results: [
+      {
+        category: 'Security,Best Practices',
+        scored: false,
+        source: 'insights',
+        properties: {
+          created_at: '2026-07-09T14:00:00Z',
+          total_risk: '4',
+          component: 'cluster.security.tls',
+          reason: `**Issue detected:**
+
+Your cluster is using an outdated TLS version that is vulnerable to known exploits.
+
+**Impact:**
+- **High severity** - Critical security vulnerability
+- Exposes cluster to man-in-the-middle attacks
+- Non-compliant with security standards`,
+          resolution: `**Recommended actions:**
+
+1. **Update TLS configuration** in your cluster:
+   \`\`\`bash
+   oc patch kubeapiserver cluster --type=merge -p '{"spec":{"tlsSecurityProfile":{"type":"Modern"}}}'
+   \`\`\`
+
+2. **Verify the update:**
+   \`\`\`bash
+   oc get kubeapiserver cluster -o yaml | grep tlsSecurityProfile
+   \`\`\`
+
+3. **References:**
+   - [Red Hat TLS Security Profiles](https://docs.openshift.com/container-platform/latest/security/tls-security-profiles.html)
+   - [NIST TLS Guidelines](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-52r2.pdf)`,
+        },
+        message: 'Cluster using outdated TLS version 1.0/1.1',
+        policy: 'TLS Security Policy',
+        result: 'fail',
+      },
+      {
+        category: 'Performance,Resource Management',
+        scored: false,
+        source: 'insights',
+        properties: {
+          created_at: '2026-07-09T14:00:00Z',
+          total_risk: '2',
+          component: 'cluster.performance.cpu',
+          reason: `**Performance issue:**
+
+High CPU usage detected on *control plane* nodes.
+
+- Average CPU: **85%**
+- Peak CPU: **95%**
+- Duration: Last 7 days`,
+          resolution: `**Scale your control plane:**
+
+\`\`\`bash
+# For standalone clusters, add control plane nodes
+oc scale machineset <machineset-name> --replicas=5 -n openshift-machine-api
+\`\`\`
+
+**Monitor the impact:**
+- [Grafana Dashboard](https://grafana.example.com/d/cpu-usage)
+- [Runbook](https://wiki.example.com/runbooks/scale-control-plane)`,
+        },
+        message: 'High CPU usage on control plane nodes',
+        policy: 'Resource Utilization Policy',
+        result: 'warning',
+      },
+      {
+        category: 'Availability,Health',
+        scored: false,
+        source: 'insights',
+        properties: {
+          created_at: '2026-07-09T14:00:00Z',
+          total_risk: '3',
+          component: 'cluster.health.etcd',
+          reason: `**Health warning:**
+
+etcd database size approaching recommended limits.
+
+Current size: **6.8 GB** (Recommended max: 8 GB)`,
+          resolution: `**Compact and defragment etcd:**
+
+\`\`\`bash
+# Compact etcd
+oc rsh -n openshift-etcd <etcd-pod> etcdctl endpoint status --write-out=table
+
+# Defragment
+oc rsh -n openshift-etcd <etcd-pod> etcdctl defrag
+\`\`\`
+
+See: [etcd maintenance guide](https://docs.openshift.com/container-platform/latest/backup_and_restore/control_plane_backup_and_restore/backing-up-etcd.html)`,
+        },
+        message: 'etcd database size approaching limits',
+        policy: 'etcd Health Policy',
+        result: 'warning',
+      },
+    ],
+  }
   const { projects } = useProjects()
   const { placementsState, placementDecisionsState } = useSharedAtoms()
   const placements = useRecoilValue(placementsState)
@@ -274,6 +401,24 @@ export function ClusterOverviewPageContent() {
         </AcmButton>
       ),
     },
+    // policyTestButton: {
+    //   key: 'Policy Sidebar Test',
+    //   value: (
+    //     <Button
+    //       variant="primary"
+    //       onClick={() => {
+    //         setDrawerContext({
+    //           isExpanded: true,
+    //           onCloseClick: () => setDrawerContext(undefined),
+    //           panelContent: <ClusterPolicySidebar data={mockPolicyReport as any} />,
+    //           panelContentProps: { minSize: '50%' },
+    //         })
+    //       }}
+    //     >
+    //       {t('Open ClusterPolicySidebar (Mock Data)')}
+    //     </Button>
+    //   ),
+    // },
     acmConsoleUrl: {
       key: t('table.acm.consoleUrl'),
       value: cluster?.acmConsoleURL && (
@@ -337,6 +482,26 @@ export function ClusterOverviewPageContent() {
       key: t('Placements'),
       value: <PlacementLinkList placementsForCluster={placementsForCluster} />,
     },
+    markdownTest: {
+      key: 'Description',
+      value: clusterDescription ? (
+        <Content>
+          <Markdown template={clusterDescription} />
+        </Content>
+      ) : (
+        <span style={{ color: 'var(--pf-v6-global--Color--200)' }}>{t('No description')}</span>
+      ),
+      keyAction: cluster?.isManaged && (
+        <RbacButton
+          onClick={() => setShowEditDescription(true)}
+          variant={ButtonVariant.plain}
+          aria-label={t('Edit cluster description')}
+          rbac={[rbacPatch(ManagedClusterDefinition, undefined, cluster?.name)]}
+        >
+          <PencilAltIcon />
+        </RbacButton>
+      ),
+    },
   }
 
   const fromClusterPool =
@@ -373,6 +538,7 @@ export function ClusterOverviewPageContent() {
   const rightItems = [
     clusterProperties.kubeApiServer,
     clusterProperties.consoleUrl,
+    // clusterProperties.policyTestButton,
     ...(cluster?.isRegionalHubCluster ? [clusterProperties.acmConsoleUrl] : []),
     ...(!cluster?.isHypershift ? [clusterProperties.clusterId] : []),
     clusterProperties.credentials,
@@ -387,6 +553,7 @@ export function ClusterOverviewPageContent() {
             : []),
         ]),
     clusterProperties.placements,
+    clusterProperties.markdownTest,
   ]
 
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -505,6 +672,18 @@ export function ClusterOverviewPageContent() {
               setShowChannelSelectModal(false)
             }}
             hostedClusters={hostedClustersMap}
+          />
+        )}
+        {showEditDescription && (
+          <EditDescription
+            description={clusterDescription}
+            clusterName={cluster?.name}
+            close={() => setShowEditDescription(false)}
+            onSave={async (newDescription) => {
+              // TODO: In real implementation, save to cluster annotation or configmap
+              console.log('Saving description:', newDescription)
+              // For now, just close the modal
+            }}
           />
         )}
       </PageSection>

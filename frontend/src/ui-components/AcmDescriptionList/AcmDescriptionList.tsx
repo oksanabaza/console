@@ -59,7 +59,10 @@ const List = (props: { items: ListItems[] }) => {
       {props.items.map(({ key, keyAction, value }) => (
         <DescriptionListGroup key={key}>
           <DescriptionListTerm>
-            {key} {keyAction}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              {key}
+              {keyAction}
+            </span>
           </DescriptionListTerm>
           <DescriptionListDescription>{value ?? '-'}</DescriptionListDescription>
         </DescriptionListGroup>
