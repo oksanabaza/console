@@ -675,6 +675,7 @@ export function CredentialsForm(
             value: namespace,
             onChange: setNamespace,
             isRequired: true,
+            menuAppendTo: () => document.body,
             options: namespaces.map((namespace) => ({
               id: namespace,
               value: namespace,

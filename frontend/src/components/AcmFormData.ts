@@ -122,6 +122,7 @@ export interface SelectInput extends SelectOptionsBase<string> {
   type: 'Select'
   variant?: 'single' | 'typeahead'
   footer?: React.ReactNode
+  menuAppendTo?: string | HTMLElement | (() => HTMLElement)
 }
 
 export interface MultiselectInput extends SelectOptionsBase<string[]> {
