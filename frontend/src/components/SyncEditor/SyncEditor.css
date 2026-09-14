@@ -10,6 +10,9 @@
   min-width: 0;
   padding: 0 12px 0 0;
   line-height: var(--pf-v6-global--LineHeight--md, 1.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sync-editor__container {
@@ -67,7 +70,8 @@
 /* Title + controls share one typographic baseline in the code editor header. */
 .sync-editor__container .sy-toolbar-row {
   display: flex;
-  flex-wrap: wrap;
+  /* Keep title and controls on a single row; the title truncates so toggling controls cannot grow the header. */
+  flex-wrap: nowrap;
   align-items: baseline;
   justify-content: space-between;
   width: 100%;
@@ -78,9 +82,10 @@
 /* Toolbar: baseline-aligned controls; separators stretch the full row height. */
 .sync-editor__container .sy-toolbar-buttons {
   display: flex;
-  flex-wrap: wrap;
+  /* Controls keep their intrinsic size on one line; the title absorbs any shrinking. */
+  flex-wrap: nowrap;
   align-items: stretch;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
   justify-content: flex-end;
 }
